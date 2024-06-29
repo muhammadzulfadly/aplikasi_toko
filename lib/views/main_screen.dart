@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'gudang_page.dart';
 import 'penjualan_page.dart';
+import 'qr_scanner_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -44,7 +45,16 @@ class _MainScreenState extends State<MainScreen> {
         width: 75.0,
         child: FloatingActionButton(
           heroTag: 'qr_code',
-          onPressed: () {},
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => QRScannerPage()),
+            );
+            if (result != null) {
+              // Lakukan sesuatu dengan hasil scan QR code
+              print("QR Code scanned: $result");
+            }
+          },
           child: Icon(
             Icons.qr_code,
             color: Colors.white,
