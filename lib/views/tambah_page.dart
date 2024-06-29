@@ -12,7 +12,7 @@ class TambahProduk extends StatelessWidget {
 
   Future<void> tambahBarang(BuildContext context) async {
     final String apiUrl =
-        "http://192.168.1.10/aplikasi_toko/lib/api/tambah_data.php";
+        "http://192.168.1.19/aplikasi_toko/lib/api/tambah_data.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {

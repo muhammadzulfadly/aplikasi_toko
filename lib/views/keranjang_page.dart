@@ -24,7 +24,8 @@ class _KeranjangState extends State<Keranjang> {
   Future<void> fetchKeranjang() async {
     final data = keranjangBox.values.toList();
     setState(() {
-      keranjangList = List<Map<String, dynamic>>.from(data);
+      keranjangList =
+          data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
       hitungTotal();
     });
   }
@@ -48,9 +49,36 @@ class _KeranjangState extends State<Keranjang> {
   Future<void> jualBarang() async {
     bool success = true;
     for (var produk in keranjangList) {
-      int newStok = int.parse(produk['stok']) - int.parse(produk['jumlah']);
+      if (produk['id'] == null) {
+        print("Produk tidak memiliki ID: $produk");
+        continue; // Skip this product if ID is null
+      }
+
+      String stok = produk['stok_barang'] ?? '0';
+      String jumlah = produk['jumlah'] ?? '0';
+      int currentStok = int.parse(stok);
+      int jumlahJual = int.parse(jumlah);
+      int newStok = currentStok - jumlahJual;
+
+      // Pastikan newStok tidak negatif
+      if (newStok < 0) {
+        print("Stok tidak cukup untuk produk: ${produk['nama_barang']}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Stok tidak cukup untuk ${produk['nama_barang']}"),
+            duration: Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+            backgroundColor: Colors.red,
+          ),
+        );
+        continue; // Skip this product if stock is not enough
+      }
+
+      print("ID: ${produk['id']}, New Stok: $newStok"); // Debugging output
+
       var response = await http.post(
-        Uri.parse('http://192.168.1.10/aplikasi_toko/lib/api/stok_data.php'),
+        Uri.parse('http://192.168.1.19/aplikasi_toko/lib/api/stok_data.php'),
         body: {
           'id': produk['id'].toString(),
           'stok_barang': newStok.toString(),
@@ -59,12 +87,47 @@ class _KeranjangState extends State<Keranjang> {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       );
-      var responseData = json.decode(response.body);
-      if (responseData['success'] != 'true') {
+
+      if (response.statusCode == 200) {
+        try {
+          var responseData = json.decode(response.body);
+          print("Response from API: $responseData"); // Debugging output
+
+          if (responseData['success'] != 'true') {
+            success = false;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Gagal menjual ${produk['nama_barang']}"),
+                duration: Duration(seconds: 1),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+                backgroundColor: Colors.red,
+              ),
+            );
+            break; // Stop the process if any product fails to be sold
+          }
+        } catch (e) {
+          success = false;
+          print("Error parsing JSON: $e");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  "Gagal menjual ${produk['nama_barang']}, error parsing JSON"),
+              duration: Duration(seconds: 1),
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+              backgroundColor: Colors.red,
+            ),
+          );
+          break; // Stop the process if any product fails to be sold
+        }
+      } else {
         success = false;
+        print("Server error: ${response.statusCode}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Gagal menjual ${produk['nama_barang']}"),
+            content:
+                Text("Gagal menjual ${produk['nama_barang']}, server error"),
             duration: Duration(seconds: 1),
             behavior: SnackBarBehavior.floating,
             margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
@@ -79,7 +142,7 @@ class _KeranjangState extends State<Keranjang> {
       fetchKeranjang();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Berhasil menjual semua produk"),
+          content: Text("Berhasil"),
           duration: Duration(seconds: 1),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
@@ -90,6 +153,11 @@ class _KeranjangState extends State<Keranjang> {
   }
 
   Future<void> addToKeranjang(Map<String, dynamic> produk) async {
+    if (produk['id'] == null) {
+      print("Produk tidak memiliki ID: $produk");
+      return; // Skip adding product if ID is null
+    }
+
     produk['jumlah'] = '1';
     await keranjangBox.add(produk);
     fetchKeranjang();

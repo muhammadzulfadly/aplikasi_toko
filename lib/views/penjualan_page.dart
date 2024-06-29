@@ -37,7 +37,8 @@ class _PenjualanState extends State<Penjualan> {
       return;
     }
 
-    final String apiUrl = "http://192.168.1.10/aplikasi_toko/lib/api/search_data.php";
+    final String apiUrl =
+        "http://192.168.1.19/aplikasi_toko/lib/api/search_data.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {
@@ -56,7 +57,8 @@ class _PenjualanState extends State<Penjualan> {
   }
 
   Future<void> searchByBarcode(String barcode) async {
-    final String apiUrl = "http://192.168.1.10/aplikasi_toko/lib/api/search_barcode.php";
+    final String apiUrl =
+        "http://192.168.1.19/aplikasi_toko/lib/api/search_barcode.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {
@@ -74,38 +76,40 @@ class _PenjualanState extends State<Penjualan> {
     }
   }
 
-  Future<void> addToKeranjang(
-      BuildContext context, Map<String, dynamic> produk) async {
-    if (int.parse(produk['stok_barang']) <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Barang habis"),
-          duration: Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } else {
-      keranjangBox.add({
-        'nama_barang': produk['nama_barang'],
-        'harga_modal': produk['harga_modal'],
-        'harga_eceran': produk['harga_eceran'],
-        'harga_grosir': produk['harga_grosir'],
-        'stok_barang': produk['stok_barang'],
-        'jumlah': '1', // Menambahkan jumlah dengan nilai awal 1
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Ditambahkan ke keranjang"),
-          duration: Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
-          backgroundColor: Colors.grey,
-        ),
-      );
-    }
+Future<void> addToKeranjang(
+    BuildContext context, Map<String, dynamic> produk) async {
+  if (int.parse(produk['stok_barang']) <= 0) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Barang habis"),
+        duration: Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } else {
+    keranjangBox.add({
+      'id': produk['id'], // Menambahkan ID produk
+      'nama_barang': produk['nama_barang'],
+      'harga_modal': produk['harga_modal'],
+      'harga_eceran': produk['harga_eceran'],
+      'harga_grosir': produk['harga_grosir'],
+      'stok_barang': produk['stok_barang'], // Pastikan stok_barang benar
+      'jumlah': '1', // Menambahkan jumlah dengan nilai awal 1
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Ditambahkan ke keranjang"),
+        duration: Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+        backgroundColor: Colors.grey,
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
