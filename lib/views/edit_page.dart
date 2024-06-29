@@ -28,7 +28,7 @@ class _EditProdukState extends State<EditProduk> {
   }
 
   Future<void> fetchProduk() async {
-    final String apiUrl = "http://shop.mzverse.my.id/api/view_data.php";
+    final String apiUrl = "http://192.168.1.10/aplikasi_toko/lib/api/view_data.php";
 
     final response = await http.post(
       Uri.parse(apiUrl),
@@ -59,7 +59,7 @@ class _EditProdukState extends State<EditProduk> {
   }
 
   Future<void> updateProduk() async {
-    final String apiUrl = "http://shop.mzverse.my.id/api/update_data.php";
+    final String apiUrl = "http://192.168.1.10/aplikasi_toko/lib/api/update_data.php";
 
     final response = await http.post(
       Uri.parse(apiUrl),
@@ -113,7 +113,7 @@ class _EditProdukState extends State<EditProduk> {
   }
 
   Future<void> hapusProduk() async {
-    final String apiUrl = "http://shop.mzverse.my.id/api/hapus_data.php";
+    final String apiUrl = "http://192.168.1.10/aplikasi_toko/lib/api/hapus_data.php";
 
     final response = await http.post(
       Uri.parse(apiUrl),

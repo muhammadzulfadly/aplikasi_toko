@@ -15,7 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   bool isLoading = false;
 
   Future<void> login() async {
-    final String apiUrl = "http://shop.mzverse.my.id/api/login_data.php";
+    final String apiUrl = "http://192.168.1.10/aplikasi_toko/lib/api/login_data.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: jsonEncode({

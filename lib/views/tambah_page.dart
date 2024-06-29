@@ -11,7 +11,8 @@ class TambahProduk extends StatelessWidget {
   final TextEditingController hargaGrosirController = TextEditingController();
 
   Future<void> tambahBarang(BuildContext context) async {
-    final String apiUrl = "http://shop.mzverse.my.id/api/tambah_data.php";
+    final String apiUrl =
+        "http://192.168.1.10/aplikasi_toko/lib/api/tambah_data.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {

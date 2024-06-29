@@ -50,7 +50,7 @@ class _KeranjangState extends State<Keranjang> {
     for (var produk in keranjangList) {
       int newStok = int.parse(produk['stok']) - int.parse(produk['jumlah']);
       var response = await http.post(
-        Uri.parse('http://shop.mzverse.my.id/api/stok_data.php'),
+        Uri.parse('http://192.168.1.10/aplikasi_toko/lib/api/stok_data.php'),
         body: {
           'id': produk['id'].toString(),
           'stok_barang': newStok.toString(),
