@@ -60,7 +60,6 @@ class _KeranjangState extends State<Keranjang> {
       int jumlahJual = int.parse(jumlah);
       int newStok = currentStok - jumlahJual;
 
-      // Pastikan newStok tidak negatif
       if (newStok < 0) {
         print("Stok tidak cukup untuk produk: ${produk['nama_barang']}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -75,13 +74,14 @@ class _KeranjangState extends State<Keranjang> {
         continue; // Skip this product if stock is not enough
       }
 
-      print("ID: ${produk['id']}, New Stok: $newStok"); // Debugging output
+      print("ID: ${produk['id']}, New Stok: $newStok");
 
       var response = await http.post(
         Uri.parse('http://192.168.1.19/aplikasi_toko/lib/api/stok_data.php'),
         body: {
           'id': produk['id'].toString(),
           'stok_barang': newStok.toString(),
+          'jumlah': jumlahJual.toString(), // Mengirim jumlah barang yang dijual
         },
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -91,7 +91,7 @@ class _KeranjangState extends State<Keranjang> {
       if (response.statusCode == 200) {
         try {
           var responseData = json.decode(response.body);
-          print("Response from API: $responseData"); // Debugging output
+          print("Response from API: $responseData");
 
           if (responseData['success'] != 'true') {
             success = false;

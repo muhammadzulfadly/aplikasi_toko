@@ -1,3 +1,4 @@
+import 'package:aplikasi_toko/views/histori_page.dart';
 import 'package:flutter/material.dart';
 import 'package:aplikasi_toko/views/edit_page.dart';
 import 'package:aplikasi_toko/views/tambah_page.dart';
@@ -79,10 +80,18 @@ class _GudangState extends State<Gudang> {
               ),
             ),
             SizedBox(width: 8),
-            CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Colors.grey),
-            ),
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HistoriPenjualan()),
+                );
+              },
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.history, color: Colors.grey),
+              ),
+            )
           ],
         ),
       ),

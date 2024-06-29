@@ -1,3 +1,4 @@
+import 'package:aplikasi_toko/views/histori_page.dart';
 import 'package:aplikasi_toko/views/keranjang_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -76,40 +77,39 @@ class _PenjualanState extends State<Penjualan> {
     }
   }
 
-Future<void> addToKeranjang(
-    BuildContext context, Map<String, dynamic> produk) async {
-  if (int.parse(produk['stok_barang']) <= 0) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Barang habis"),
-        duration: Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
-        backgroundColor: Colors.red,
-      ),
-    );
-  } else {
-    keranjangBox.add({
-      'id': produk['id'], // Menambahkan ID produk
-      'nama_barang': produk['nama_barang'],
-      'harga_modal': produk['harga_modal'],
-      'harga_eceran': produk['harga_eceran'],
-      'harga_grosir': produk['harga_grosir'],
-      'stok_barang': produk['stok_barang'], // Pastikan stok_barang benar
-      'jumlah': '1', // Menambahkan jumlah dengan nilai awal 1
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Ditambahkan ke keranjang"),
-        duration: Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
-        backgroundColor: Colors.grey,
-      ),
-    );
+  Future<void> addToKeranjang(
+      BuildContext context, Map<String, dynamic> produk) async {
+    if (int.parse(produk['stok_barang']) <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Barang habis"),
+          duration: Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else {
+      keranjangBox.add({
+        'id': produk['id'], // Menambahkan ID produk
+        'nama_barang': produk['nama_barang'],
+        'harga_modal': produk['harga_modal'],
+        'harga_eceran': produk['harga_eceran'],
+        'harga_grosir': produk['harga_grosir'],
+        'stok_barang': produk['stok_barang'], // Pastikan stok_barang benar
+        'jumlah': '1', // Menambahkan jumlah dengan nilai awal 1
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Ditambahkan ke keranjang"),
+          duration: Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+          backgroundColor: Colors.grey,
+        ),
+      );
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -142,10 +142,18 @@ Future<void> addToKeranjang(
               ),
             ),
             SizedBox(width: 8),
-            CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Colors.grey),
-            ),
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HistoriPenjualan()),
+                );
+              },
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.history, color: Colors.grey),
+              ),
+            )
           ],
         ),
       ),
