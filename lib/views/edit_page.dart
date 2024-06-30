@@ -251,6 +251,7 @@ class _EditProdukState extends State<EditProduk> {
                   SizedBox(height: 15),
                   TextField(
                     controller: stokController,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: 'STOK',
                       enabledBorder: OutlineInputBorder(
@@ -270,6 +271,7 @@ class _EditProdukState extends State<EditProduk> {
                   SizedBox(height: 15),
                   TextField(
                     controller: hargaModalController,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: 'HARGA MODAL',
                       enabledBorder: OutlineInputBorder(
@@ -289,6 +291,7 @@ class _EditProdukState extends State<EditProduk> {
                   SizedBox(height: 15),
                   TextField(
                     controller: hargaEceranController,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: 'HARGA ECERAN',
                       enabledBorder: OutlineInputBorder(
@@ -308,6 +311,7 @@ class _EditProdukState extends State<EditProduk> {
                   SizedBox(height: 15),
                   TextField(
                     controller: hargaGrosirController,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: 'HARGA GROSIR',
                       enabledBorder: OutlineInputBorder(
