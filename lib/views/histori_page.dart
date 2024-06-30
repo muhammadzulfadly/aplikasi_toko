@@ -17,8 +17,8 @@ class _HistoriPenjualanState extends State<HistoriPenjualan> {
   }
 
   Future<void> fetchHistori() async {
-    final response = await http.get(Uri.parse(
-        'http://shop.mzverse.my.id/api/histori_penjualan.php'));
+    final response = await http
+        .get(Uri.parse('http://shop.mzverse.my.id/api/histori_penjualan.php'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -41,12 +41,12 @@ class _HistoriPenjualanState extends State<HistoriPenjualan> {
           },
         ),
         title: Text(
-          'Keranjang',
+          'Histori Penjualan',
           style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
         ),
       ),
       body: historiList.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? Text('Tidak ada penjualan')
           : ListView.builder(
               itemCount: historiList.length,
               itemBuilder: (context, index) {
