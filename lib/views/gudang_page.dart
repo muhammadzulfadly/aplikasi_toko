@@ -24,7 +24,7 @@ class _GudangState extends State<Gudang> {
 
   Future<void> fetchProduk() async {
     final response = await http.get(
-        Uri.parse('http://192.168.1.19/aplikasi_toko/lib/api/view_data.php'));
+        Uri.parse('http://shop.mzverse.my.id/api/view_data.php'));
 
     if (response.statusCode == 200) {
       setState(() {

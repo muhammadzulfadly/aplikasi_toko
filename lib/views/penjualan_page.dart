@@ -29,6 +29,14 @@ class _PenjualanState extends State<Penjualan> {
     }
   }
 
+  @override
+  void didUpdateWidget(Penjualan oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.barcode != null && widget.barcode != oldWidget.barcode) {
+      searchByBarcode(widget.barcode!);
+    }
+  }
+
   Future<void> searchProduk(String query) async {
     if (query.isEmpty) {
       setState(() {
@@ -38,8 +46,7 @@ class _PenjualanState extends State<Penjualan> {
       return;
     }
 
-    final String apiUrl =
-        "http://192.168.1.19/aplikasi_toko/lib/api/search_data.php";
+    final String apiUrl = "http://shop.mzverse.my.id/api/search_data.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {
@@ -58,8 +65,7 @@ class _PenjualanState extends State<Penjualan> {
   }
 
   Future<void> searchByBarcode(String barcode) async {
-    final String apiUrl =
-        "http://192.168.1.19/aplikasi_toko/lib/api/search_barcode.php";
+    final String apiUrl = "http://shop.mzverse.my.id/api/search_barcode.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {
@@ -96,8 +102,8 @@ class _PenjualanState extends State<Penjualan> {
         'harga_modal': produk['harga_modal'],
         'harga_eceran': produk['harga_eceran'],
         'harga_grosir': produk['harga_grosir'],
-        'stok_barang': produk['stok_barang'], // Pastikan stok_barang benar
-        'jumlah': '1', // Menambahkan jumlah dengan nilai awal 1
+        'stok_barang': produk['stok_barang'],
+        'jumlah': '1',
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

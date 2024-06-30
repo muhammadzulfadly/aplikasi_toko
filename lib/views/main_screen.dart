@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'gudang_page.dart';
 import 'penjualan_page.dart';
-import 'qr_scanner_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -12,13 +12,33 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  String? scannedBarcode;
 
-  final List<Widget> _pages = [Penjualan(), Gudang()];
+  final List<Widget> _pages = [
+    Penjualan(),
+    Gudang(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      scannedBarcode = null;
+    });
+  }
+
+  void _onBarcodeScanned(String barcode) {
+    setState(() {
+      _selectedIndex = 0;
+      scannedBarcode = barcode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _selectedIndex == 0
+          ? Penjualan(barcode: scannedBarcode)
+          : _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -33,11 +53,7 @@ class _MainScreenState extends State<MainScreen> {
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onTap: _onItemTapped,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
@@ -48,11 +64,10 @@ class _MainScreenState extends State<MainScreen> {
           onPressed: () async {
             final result = await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => QRScannerPage()),
+              MaterialPageRoute(builder: (context) => SimpleBarcodeScannerPage()),
             );
             if (result != null) {
-              // Lakukan sesuatu dengan hasil scan QR code
-              print("QR Code scanned: $result");
+              _onBarcodeScanned(result);
             }
           },
           child: Icon(

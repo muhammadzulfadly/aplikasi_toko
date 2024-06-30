@@ -77,11 +77,11 @@ class _KeranjangState extends State<Keranjang> {
       print("ID: ${produk['id']}, New Stok: $newStok");
 
       var response = await http.post(
-        Uri.parse('http://192.168.1.19/aplikasi_toko/lib/api/stok_data.php'),
+        Uri.parse('http://shop.mzverse.my.id/api/stok_data.php'),
         body: {
           'id': produk['id'].toString(),
           'stok_barang': newStok.toString(),
-          'jumlah': jumlahJual.toString(), // Mengirim jumlah barang yang dijual
+          'jumlah': jumlahJual.toString(),
         },
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
