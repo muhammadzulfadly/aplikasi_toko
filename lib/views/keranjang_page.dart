@@ -10,33 +10,19 @@ class Keranjang extends StatefulWidget {
 }
 
 class _KeranjangState extends State<Keranjang> {
-  final TextEditingController stokController = TextEditingController(text: '1');
   late Box keranjangBox;
   List<Map<String, dynamic>> keranjangList = [];
   int totalHarga = 0;
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   List<BluetoothDevice> _devices = [];
   BluetoothDevice? _selectedDevice;
+  List<TextEditingController> controllers = [];
 
   @override
   void initState() {
     super.initState();
     keranjangBox = Hive.box('keranjang');
     fetchKeranjang();
-    initBluetooth();
-  }
-
-  Future<void> initBluetooth() async {
-    List<BluetoothDevice> devices = [];
-    try {
-      devices = await bluetooth.getBondedDevices();
-    } catch (e) {
-      print('Error getting bonded devices: $e');
-    }
-
-    setState(() {
-      _devices = devices;
-    });
   }
 
   Future<void> fetchKeranjang() async {
@@ -44,6 +30,9 @@ class _KeranjangState extends State<Keranjang> {
     setState(() {
       keranjangList =
           data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+      controllers = List.generate(keranjangList.length, (index) {
+        return TextEditingController(text: keranjangList[index]['jumlah']);
+      });
       hitungTotal();
     });
   }
@@ -69,7 +58,7 @@ class _KeranjangState extends State<Keranjang> {
     for (var produk in keranjangList) {
       if (produk['id'] == null) {
         print("Produk tidak memiliki ID: $produk");
-        continue; // Skip this product if ID is null
+        continue;
       }
 
       String stok = produk['stok_barang'] ?? '0';
@@ -89,7 +78,7 @@ class _KeranjangState extends State<Keranjang> {
             backgroundColor: Colors.red,
           ),
         );
-        continue; // Skip this product if stock is not enough
+        continue;
       }
 
       print("ID: ${produk['id']}, New Stok: $newStok");
@@ -278,6 +267,8 @@ class _KeranjangState extends State<Keranjang> {
                 itemCount: keranjangList.length,
                 itemBuilder: (context, index) {
                   final produk = keranjangList[index];
+                  final controller = controllers[index];
+
                   return Card(
                     margin: EdgeInsets.symmetric(vertical: 10),
                     child: Padding(
@@ -316,10 +307,12 @@ class _KeranjangState extends State<Keranjang> {
                                 onPressed: () {
                                   setState(() {
                                     int currentValue =
-                                        int.parse(produk['jumlah']);
+                                        int.parse(controller.text);
                                     if (currentValue > 1) {
+                                      currentValue--;
+                                      controller.text = currentValue.toString();
                                       produk['jumlah'] =
-                                          (currentValue - 1).toString();
+                                          currentValue.toString();
                                       keranjangBox.putAt(index, produk);
                                       hitungTotal();
                                     }
@@ -331,8 +324,7 @@ class _KeranjangState extends State<Keranjang> {
                               Container(
                                 width: 50,
                                 child: TextField(
-                                  controller: TextEditingController(
-                                      text: produk['jumlah']),
+                                  controller: controller,
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
                                   decoration: InputDecoration(
@@ -349,7 +341,8 @@ class _KeranjangState extends State<Keranjang> {
                                         if (newValue < 1) {
                                           produk['jumlah'] = '1';
                                         } else {
-                                          produk['jumlah'] = value;
+                                          produk['jumlah'] =
+                                              newValue.toString();
                                         }
                                       }
                                       keranjangBox.putAt(index, produk);
@@ -362,9 +355,10 @@ class _KeranjangState extends State<Keranjang> {
                                 onPressed: () {
                                   setState(() {
                                     int currentValue =
-                                        int.parse(produk['jumlah']);
-                                    produk['jumlah'] =
-                                        (currentValue + 1).toString();
+                                        int.parse(controller.text);
+                                    currentValue++;
+                                    controller.text = currentValue.toString();
+                                    produk['jumlah'] = currentValue.toString();
                                     keranjangBox.putAt(index, produk);
                                     hitungTotal();
                                   });
@@ -419,8 +413,6 @@ class _KeranjangState extends State<Keranjang> {
                       SnackBar(
                         content: Text("Keranjang kosong"),
                         duration: Duration(seconds: 1),
-                        behavior: SnackBarBehavior.floating,
-                        margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
                         backgroundColor: Colors.red,
                       ),
                     );

@@ -96,29 +96,46 @@ class _PenjualanState extends State<Penjualan> {
         ),
       );
     } else {
-      keranjangBox.add({
-        'id': produk['id'], // Menambahkan ID produk
-        'nama_barang': produk['nama_barang'],
-        'harga_modal': produk['harga_modal'],
-        'harga_eceran': produk['harga_eceran'],
-        'harga_grosir': produk['harga_grosir'],
-        'stok_barang': produk['stok_barang'],
-        'jumlah': '1',
+      bool alreadyInCart = keranjangBox.values.any((item) {
+        Map<String, dynamic> mapItem = Map<String, dynamic>.from(item as Map);
+        return mapItem['id'] == produk['id'];
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Ditambahkan ke keranjang"),
-          duration: Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
-          backgroundColor: Colors.grey,
-        ),
-      );
-      setState(() {
-        searchController.clear();
-        produkList = [];
-        isSearching = false;
-      });
+
+      if (alreadyInCart) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Barang sudah ada di keranjang"),
+            duration: Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      } else {
+        keranjangBox.add({
+          'id': produk['id'],
+          'nama_barang': produk['nama_barang'],
+          'harga_modal': produk['harga_modal'],
+          'harga_eceran': produk['harga_eceran'],
+          'harga_grosir': produk['harga_grosir'],
+          'stok_barang': produk['stok_barang'],
+          'jumlah': '1',
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Ditambahkan ke keranjang"),
+            duration: Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+            backgroundColor: Colors.grey,
+          ),
+        );
+        setState(() {
+          searchController.clear();
+          produkList = [];
+          isSearching = false;
+        });
+      }
     }
   }
 

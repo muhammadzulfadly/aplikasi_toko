@@ -54,7 +54,7 @@ class _HistoriPenjualanState extends State<HistoriPenjualan> {
                 return ListTile(
                   title: Text(histori['nama_barang']),
                   subtitle: Text(
-                      'Jumlah: ${histori['jumlah']} - Total Harga: Rp. ${histori['total_harga']}'),
+                      '${histori['jumlah']} x Rp. ${histori['harga_jual']}'),
                   trailing: Text(histori['tanggal_penjualan']),
                 );
               },
