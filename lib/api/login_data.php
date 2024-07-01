@@ -5,7 +5,7 @@ function login($username, $password)
 {
     $con = dbconnection();
 
-    $query = "SELECT id, username FROM users WHERE username = ? AND password = ?";
+    $query = "SELECT * FROM users WHERE username = ? AND password = ?";
     $stmt = $con->prepare($query);
     $stmt->bind_param("ss", $username, $password);
     $stmt->execute();

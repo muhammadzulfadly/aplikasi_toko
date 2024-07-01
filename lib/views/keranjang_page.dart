@@ -3,7 +3,6 @@ import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Keranjang extends StatefulWidget {
   @override
@@ -241,20 +240,7 @@ class _KeranjangState extends State<Keranjang> {
       bluetooth.paperCut();
       await bluetooth.disconnect();
     }
-    _loadUserData();
     Navigator.of(context).pop();
-  }
-
-  String? username;
-  int? userId;
-
-  void _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      username = prefs.getString('username');
-      userId = prefs.getInt('userId');
-    });
-    Text("Admin : ${username ?? 'Guest'}");
   }
 
   Future<void> addToKeranjang(Map<String, dynamic> produk) async {
