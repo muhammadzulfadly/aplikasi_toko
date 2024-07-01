@@ -114,6 +114,11 @@ class _PenjualanState extends State<Penjualan> {
           backgroundColor: Colors.grey,
         ),
       );
+      setState(() {
+        searchController.clear();
+        produkList = [];
+        isSearching = false;
+      });
     }
   }
 

@@ -1,7 +1,9 @@
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Keranjang extends StatefulWidget {
   @override
@@ -13,12 +15,29 @@ class _KeranjangState extends State<Keranjang> {
   late Box keranjangBox;
   List<Map<String, dynamic>> keranjangList = [];
   int totalHarga = 0;
+  BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  List<BluetoothDevice> _devices = [];
+  BluetoothDevice? _selectedDevice;
 
   @override
   void initState() {
     super.initState();
     keranjangBox = Hive.box('keranjang');
     fetchKeranjang();
+    initBluetooth();
+  }
+
+  Future<void> initBluetooth() async {
+    List<BluetoothDevice> devices = [];
+    try {
+      devices = await bluetooth.getBondedDevices();
+    } catch (e) {
+      print('Error getting bonded devices: $e');
+    }
+
+    setState(() {
+      _devices = devices;
+    });
   }
 
   Future<void> fetchKeranjang() async {
@@ -119,7 +138,7 @@ class _KeranjangState extends State<Keranjang> {
               backgroundColor: Colors.red,
             ),
           );
-          break; // Stop the process if any product fails to be sold
+          break;
         }
       } else {
         success = false;
@@ -149,7 +168,93 @@ class _KeranjangState extends State<Keranjang> {
           backgroundColor: Colors.green,
         ),
       );
+      _showPrintDialog();
     }
+  }
+
+  void _showPrintDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Print Struk"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButton<BluetoothDevice>(
+                hint: Text('Pilih perangkat'),
+                value: _selectedDevice,
+                onChanged: (BluetoothDevice? value) {
+                  setState(() {
+                    _selectedDevice = value;
+                  });
+                },
+                items: _devices.map((BluetoothDevice device) {
+                  return DropdownMenuItem<BluetoothDevice>(
+                    value: device,
+                    child: Text(device.name!),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Home", style: TextStyle(color: Colors.blue)),
+                  ),
+                  ElevatedButton(
+                    onPressed: _selectedDevice == null ? null : _printStruk,
+                    child: Text(
+                      "Print",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _printStruk() async {
+    if (_selectedDevice != null) {
+      await bluetooth.connect(_selectedDevice!);
+      bluetooth.printCustom("Daftar Barang Terjual", 3, 1);
+      for (var produk in keranjangList) {
+        bluetooth.printNewLine();
+        bluetooth.printLeftRight("${produk['nama_barang']}",
+            "${produk['jumlah']} x ${produk['harga_eceran']}", 1);
+      }
+      bluetooth.printNewLine();
+      bluetooth.printCustom("Total: $totalHarga", 2, 1);
+      bluetooth.printNewLine();
+      bluetooth.paperCut();
+      await bluetooth.disconnect();
+    }
+    _loadUserData();
+    Navigator.of(context).pop();
+  }
+
+  String? username;
+  int? userId;
+
+  void _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString('username');
+      userId = prefs.getInt('userId');
+    });
+    Text("Admin : ${username ?? 'Guest'}");
   }
 
   Future<void> addToKeranjang(Map<String, dynamic> produk) async {

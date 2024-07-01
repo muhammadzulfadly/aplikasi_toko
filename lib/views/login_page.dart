@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -15,7 +16,8 @@ class _LoginPageState extends State<LoginPage> {
   bool isLoading = false;
 
   Future<void> login() async {
-    final String apiUrl = "http://shop.mzverse.my.id/api/login_data.php";
+    final String apiUrl =
+        "http://shop.mzverse.my.id/api/login_data.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: jsonEncode({
@@ -30,6 +32,9 @@ class _LoginPageState extends State<LoginPage> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       if (data['success']) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('username', data['user']['username']);
+        await prefs.setInt('userId', data['user']['id']);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MainScreen()),
@@ -48,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Username atau password Anda salah"),
+          content: Text("Gagal terhubung ke server"),
           duration: Duration(seconds: 1),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
