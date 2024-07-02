@@ -41,7 +41,9 @@ dependencies:
   hive_flutter: ^1.1.0
   lottie: ^1.0.1
   simple_barcode_scanner: ^0.1.1
-  blue_thermal_printer: ^1.2.3
+  pdf: ^3.11.0
+  share: ^2.0.4
+  open_file: ^3.3.2
 
 dev_dependencies:
   flutter_test:
