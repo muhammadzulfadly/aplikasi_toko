@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart'; // Pastikan Anda telah menambahkan paket intl di pubspec.yaml
 
 class Penjualan extends StatefulWidget {
   final String? barcode;
@@ -19,6 +20,8 @@ class _PenjualanState extends State<Penjualan> {
   List produkList = [];
   bool isSearching = false;
   late Box keranjangBox;
+  final numberFormatter =
+      NumberFormat('#,##0', 'id_ID'); // Formatter untuk harga
 
   @override
   void initState() {
@@ -208,12 +211,12 @@ class _PenjualanState extends State<Penjualan> {
                               ),
                               SizedBox(height: 5),
                               Text(
-                                'Rp. ${produk['harga_eceran']}',
+                                'Rp. ${numberFormatter.format(int.parse(produk['harga_eceran']))}',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               SizedBox(height: 5),
                               Text(
-                                  'HARGA GROSIR : RP. ${produk['harga_grosir']}'),
+                                  'HARGA GROSIR : Rp. ${numberFormatter.format(int.parse(produk['harga_grosir']))}'),
                               SizedBox(height: 5),
                               Text('STOK : ${produk['stok_barang']}'),
                               SizedBox(height: 5),

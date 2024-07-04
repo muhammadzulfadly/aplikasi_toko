@@ -4,6 +4,7 @@ import 'package:aplikasi_toko/views/edit_page.dart';
 import 'package:aplikasi_toko/views/tambah_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart'; // Pastikan Anda telah menambahkan paket intl di pubspec.yaml
 
 class Gudang extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class _GudangState extends State<Gudang> {
   List filteredProdukList = [];
   final TextEditingController searchController = TextEditingController();
   bool isSearching = false;
+  final numberFormatter = NumberFormat('#,##0', 'id_ID'); // Formatter untuk harga
 
   @override
   void initState() {
@@ -101,7 +103,7 @@ class _GudangState extends State<Gudang> {
           children: [
             Expanded(
               child: filteredProdukList.isEmpty
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(child: Text("Tidak ada barang ditemukan"))
                   : ListView.builder(
                       itemCount: filteredProdukList.length,
                       itemBuilder: (context, index) {
@@ -134,13 +136,13 @@ class _GudangState extends State<Gudang> {
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    'Rp. ${produk['harga_eceran']}',
+                                    'Rp. ${numberFormatter.format(int.parse(produk['harga_eceran']))}',
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                      'HARGA GROSIR : RP. ${produk['harga_grosir']}'),
+                                      'HARGA GROSIR : Rp. ${numberFormatter.format(int.parse(produk['harga_grosir']))}'),
                                   SizedBox(height: 5),
                                   Text('STOK : ${produk['stok_barang']}'),
                                   SizedBox(height: 5),
