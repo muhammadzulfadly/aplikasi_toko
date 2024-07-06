@@ -7,9 +7,10 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id = $_POST['id'];
     $stok_barang = $_POST['stok_barang'];
+    $jumlah = $_POST['jumlah'];
 
     // Debugging output
-    error_log("ID: $id, Stok: $stok_barang");
+    error_log("ID: $id, Stok: $stok_barang, Jumlah: $jumlah");
 
     if (!$con) {
         error_log("Koneksi ke database gagal: " . mysqli_connect_error());
@@ -32,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $nama_barang = $produk['nama_barang'];
             $harga_jual = $produk['harga_eceran'];
-            $jumlah = $_POST['jumlah']; // Jumlah barang yang dijual
             $total_harga = $harga_jual * $jumlah;
 
             $histori_query = "INSERT INTO histori_penjualan (produk_id, nama_barang, harga_jual, jumlah, total_harga) 
