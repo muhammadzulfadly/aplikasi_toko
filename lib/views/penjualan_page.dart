@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:hive/hive.dart';
-import 'package:intl/intl.dart'; // Pastikan Anda telah menambahkan paket intl di pubspec.yaml
+import 'package:intl/intl.dart';
 
 class Penjualan extends StatefulWidget {
   final String? barcode;
@@ -88,7 +88,7 @@ class _PenjualanState extends State<Penjualan> {
 
   Future<void> addToKeranjang(
       BuildContext context, Map<String, dynamic> produk) async {
-    if (int.parse(produk['stok_barang']) <= 0) {
+    if (double.parse(produk['stok_barang']) <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Barang habis"),
