@@ -20,6 +20,7 @@ class _PenjualanState extends State<Penjualan> {
   List produkList = [];
   bool isSearching = false;
   late Box keranjangBox;
+  int? toggledProductId;
   final numberFormatter =
       NumberFormat('#,##0', 'id_ID'); // Formatter untuk harga
 
@@ -68,7 +69,9 @@ class _PenjualanState extends State<Penjualan> {
   }
 
   Future<void> searchByBarcode(String barcode) async {
-    final String apiUrl = "http://shop.mzverse.my.id/api/search_barcode.php";
+    //final String apiUrl = "http://shop.mzverse.my.id/api/search_barcode.php";
+    final String apiUrl =
+        "http://192.168.1.12/aplikasi_toko/lib/api/search_barcode.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {
@@ -84,6 +87,16 @@ class _PenjualanState extends State<Penjualan> {
     } else {
       print("Failed to fetch data");
     }
+  }
+
+  void toggleRepeat(int id) {
+    setState(() {
+      if (toggledProductId == id) {
+        toggledProductId = null;
+      } else {
+        toggledProductId = id;
+      }
+    });
   }
 
   Future<void> addToKeranjang(
@@ -118,10 +131,16 @@ class _PenjualanState extends State<Penjualan> {
         keranjangBox.add({
           'id': produk['id'],
           'nama_barang': produk['nama_barang'],
+          'barcode_barang': produk['barcode_barang'],
+          'stok_barang': produk['stok_barang'],
           'harga_modal': produk['harga_modal'],
           'harga_eceran': produk['harga_eceran'],
           'harga_grosir': produk['harga_grosir'],
-          'stok_barang': produk['stok_barang'],
+          'satuan_barang': produk['satuan_barang'],
+          'stok_besar_barang': produk['stok_besar_barang'],
+          'jumlah_isi_barang': produk['jumlah_isi_barang'],
+          'harga_eceran_besar': produk['harga_eceran_besar'],
+          'satuan_besar_barang': produk['satuan_besar_barang'],
           'jumlah': '1',
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -197,6 +216,17 @@ class _PenjualanState extends State<Penjualan> {
                     itemCount: produkList.length,
                     itemBuilder: (context, index) {
                       final produk = produkList[index];
+                      final id = int.parse(produk['id']);
+                      final isToggled = toggledProductId == id;
+                      final harga = isToggled
+                          ? produk['harga_eceran_besar']
+                          : produk['harga_eceran'];
+                      final stok = isToggled
+                          ? produk['stok_besar_barang']
+                          : produk['stok_barang'];
+                      final satuan = isToggled
+                          ? produk['satuan_besar_barang']
+                          : produk['satuan_barang'];
                       return Card(
                         margin: EdgeInsets.symmetric(vertical: 10),
                         child: Padding(
@@ -211,29 +241,50 @@ class _PenjualanState extends State<Penjualan> {
                               ),
                               SizedBox(height: 5),
                               Text(
-                                'Rp. ${numberFormatter.format(int.parse(produk['harga_eceran']))}',
+                                'Rp. ${numberFormatter.format(int.parse(harga))}',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               SizedBox(height: 5),
-                              Text(
-                                  'HARGA GROSIR : Rp. ${numberFormatter.format(int.parse(produk['harga_grosir']))}'),
+                              Text('STOK : $stok'),
                               SizedBox(height: 5),
-                              Text('STOK : ${produk['stok_barang']}'),
-                              SizedBox(height: 5),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    addToKeranjang(context, produk);
-                                  },
-                                  child: Text(
-                                    'JUAL',
-                                    style: TextStyle(color: Colors.white),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            toggleRepeat(id);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            shape: CircleBorder(),
+                                          ),
+                                          child: Icon(Icons.repeat,
+                                              color: Colors.blue),
+                                        ),
+                                      ),
+                                      Text('$satuan')
+                                    ],
                                   ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        addToKeranjang(context, produk);
+                                      },
+                                      child: Text(
+                                        'JUAL',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                             ],
                           ),

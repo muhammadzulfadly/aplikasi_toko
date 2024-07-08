@@ -5,7 +5,6 @@ import 'package:pdf/pdf.dart';
 import 'dart:convert';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-import 'dart:html' as html;
 
 class Keranjang extends StatefulWidget {
   @override
@@ -17,6 +16,7 @@ class _KeranjangState extends State<Keranjang> {
   List<Map<String, dynamic>> keranjangList = [];
   double totalHarga = 0;
   List<TextEditingController> controllers = [];
+  int? toggledProductId;
   final numberFormatter =
       NumberFormat('#,##0.##', 'id_ID'); // Formatter untuk harga
 
@@ -25,6 +25,17 @@ class _KeranjangState extends State<Keranjang> {
     super.initState();
     keranjangBox = Hive.box('keranjang');
     fetchKeranjang();
+  }
+
+  void toggleRepeat(int id) {
+    setState(() {
+      if (toggledProductId == id) {
+        toggledProductId = null;
+      } else {
+        toggledProductId = id;
+      }
+      hitungTotal(); // Recalculate the total when toggling
+    });
   }
 
   Future<void> fetchKeranjang() async {
@@ -42,8 +53,12 @@ class _KeranjangState extends State<Keranjang> {
   void hitungTotal() {
     double totalHargaBarang = 0;
     for (var produk in keranjangList) {
-      totalHargaBarang +=
-          double.parse(produk['harga_eceran']) * double.parse(produk['jumlah']);
+      final id = int.parse(produk['id']);
+      final isToggled = toggledProductId == id;
+      final harga = isToggled
+          ? double.parse(produk['harga_eceran_besar'])
+          : double.parse(produk['harga_eceran']);
+      totalHargaBarang += harga * double.parse(produk['jumlah']);
     }
     setState(() {
       totalHarga = totalHargaBarang;
@@ -69,6 +84,10 @@ class _KeranjangState extends State<Keranjang> {
       double jumlahJual = double.parse(jumlah);
       double newStok = currentStok - jumlahJual;
 
+      String satuan = toggledProductId == int.parse(produk['id'])
+          ? produk['satuan_besar_barang']
+          : produk['satuan_barang'];
+
       if (newStok < 0) {
         print("Stok tidak cukup untuk produk: ${produk['nama_barang']}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -91,11 +110,15 @@ class _KeranjangState extends State<Keranjang> {
           'id': produk['id'].toString(),
           'stok_barang': newStok.toString(),
           'jumlah': jumlahJual.toString(),
+          'satuan': satuan, // Kirim parameter satuan
         },
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
 
       if (response.statusCode == 200) {
         try {
@@ -333,26 +356,26 @@ class _KeranjangState extends State<Keranjang> {
       ),
     );
 
-    try {
-      final bytes = await pdf.save();
-      final blob = html.Blob([bytes], 'application/pdf');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      html.AnchorElement(href: url)
-        ..setAttribute('download', 'struk_penjualan.pdf')
-        ..click();
-      html.Url.revokeObjectUrl(url);
-    } catch (e) {
-      print("Error generating or downloading PDF: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Gagal mencetak PDF: $e"),
-          duration: Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // try {
+    //   final bytes = await pdf.save();
+    //   final blob = html.Blob([bytes], 'application/pdf');
+    //   final url = html.Url.createObjectUrlFromBlob(blob);
+    //   html.AnchorElement(href: url)
+    //     ..setAttribute('download', 'struk_penjualan.pdf')
+    //     ..click();
+    //   html.Url.revokeObjectUrl(url);
+    // } catch (e) {
+    //   print("Error generating or downloading PDF: $e");
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text("Gagal mencetak PDF: $e"),
+    //       duration: Duration(seconds: 1),
+    //       behavior: SnackBarBehavior.floating,
+    //       margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+    //       backgroundColor: Colors.red,
+    //     ),
+    //   );
+    // }
   }
 
   Future<void> addToKeranjang(Map<String, dynamic> produk) async {
@@ -391,7 +414,14 @@ class _KeranjangState extends State<Keranjang> {
                 itemBuilder: (context, index) {
                   final produk = keranjangList[index];
                   final controller = controllers[index];
-
+                  final id = int.parse(produk['id']);
+                  final isToggled = toggledProductId == id;
+                  final harga = isToggled
+                      ? produk['harga_eceran_besar']
+                      : produk['harga_eceran'];
+                  final satuan = isToggled
+                      ? produk['satuan_besar_barang']
+                      : produk['satuan_barang'];
                   return Card(
                     margin: EdgeInsets.symmetric(vertical: 10),
                     child: Padding(
@@ -426,76 +456,104 @@ class _KeranjangState extends State<Keranjang> {
                           ),
                           SizedBox(height: 5),
                           Text(
-                            'RP. ${numberFormatter.format(double.parse(produk['harga_eceran']))}',
+                            'RP. ${numberFormatter.format(double.parse(harga))}',
                             style: TextStyle(fontSize: 18),
                           ),
                           SizedBox(height: 5),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    double currentValue =
-                                        double.parse(controller.text);
-                                    if (currentValue > 0.5) {
-                                      currentValue -= 0.5;
-                                      controller.text = currentValue.toString();
-                                      produk['jumlah'] =
-                                          currentValue.toString();
-                                      keranjangBox.putAt(index, produk);
-                                      hitungTotal();
-                                    }
-                                  });
-                                },
-                                icon: Icon(Icons.remove),
-                                color: Colors.blue,
-                              ),
-                              Container(
-                                width: 50,
-                                child: TextField(
-                                  controller: controller,
-                                  textAlign: TextAlign.center,
-                                  keyboardType: TextInputType.numberWithOptions(
-                                      decimal: true),
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    contentPadding:
-                                        EdgeInsets.symmetric(vertical: 5),
+                              Row(
+                                children: [
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        toggleRepeat(id);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        shape: CircleBorder(),
+                                      ),
+                                      child: Icon(Icons.repeat,
+                                          color: Colors.blue),
+                                    ),
                                   ),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      if (value.isEmpty) {
-                                        produk['jumlah'] = '0';
-                                      } else {
-                                        double newValue = double.parse(value);
-                                        if (newValue < 0.5) {
-                                          produk['jumlah'] = '0.5';
-                                        } else {
-                                          produk['jumlah'] =
-                                              newValue.toString();
-                                        }
-                                      }
-                                      keranjangBox.putAt(index, produk);
-                                      hitungTotal();
-                                    });
-                                  },
-                                ),
+                                  Text('$satuan')
+                                ],
                               ),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    double currentValue =
-                                        double.parse(controller.text);
-                                    currentValue += 0.5;
-                                    controller.text = currentValue.toString();
-                                    produk['jumlah'] = currentValue.toString();
-                                    keranjangBox.putAt(index, produk);
-                                    hitungTotal();
-                                  });
-                                },
-                                icon: Icon(Icons.add),
-                                color: Colors.blue,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        double currentValue =
+                                            double.parse(controller.text);
+                                        if (currentValue > 0.5) {
+                                          currentValue -= 0.5;
+                                          controller.text =
+                                              currentValue.toString();
+                                          produk['jumlah'] =
+                                              currentValue.toString();
+                                          keranjangBox.putAt(index, produk);
+                                          hitungTotal();
+                                        }
+                                      });
+                                    },
+                                    icon: Icon(Icons.remove),
+                                    color: Colors.blue,
+                                  ),
+                                  Container(
+                                    width: 50,
+                                    child: TextField(
+                                      controller: controller,
+                                      textAlign: TextAlign.center,
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        contentPadding:
+                                            EdgeInsets.symmetric(vertical: 5),
+                                      ),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          if (value.isEmpty) {
+                                            produk['jumlah'] = '0';
+                                          } else {
+                                            double newValue =
+                                                double.parse(value);
+                                            if (newValue < 0.5) {
+                                              produk['jumlah'] = '0.5';
+                                            } else {
+                                              produk['jumlah'] =
+                                                  newValue.toString();
+                                            }
+                                          }
+                                          keranjangBox.putAt(index, produk);
+                                          hitungTotal();
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        double currentValue =
+                                            double.parse(controller.text);
+                                        currentValue += 0.5;
+                                        controller.text =
+                                            currentValue.toString();
+                                        produk['jumlah'] =
+                                            currentValue.toString();
+                                        keranjangBox.putAt(index, produk);
+                                        hitungTotal();
+                                      });
+                                    },
+                                    icon: Icon(Icons.add),
+                                    color: Colors.blue,
+                                  ),
+                                ],
                               ),
                             ],
                           ),

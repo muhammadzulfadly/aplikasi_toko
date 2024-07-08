@@ -6,8 +6,14 @@ class TambahProduk extends StatelessWidget {
   final TextEditingController namaBarangController = TextEditingController();
   final TextEditingController barcodeController = TextEditingController();
   final TextEditingController stokController = TextEditingController();
-  final TextEditingController hargaModalController = TextEditingController();
   final TextEditingController hargaEceranController = TextEditingController();
+  final TextEditingController satuanController = TextEditingController();
+  final TextEditingController stokBesarController = TextEditingController();
+  final TextEditingController jumlahIsiController = TextEditingController();
+  final TextEditingController hargaEceranBesarController =
+      TextEditingController();
+  final TextEditingController satuanBesarController = TextEditingController();
+  final TextEditingController hargaModalController = TextEditingController();
   final TextEditingController hargaGrosirController = TextEditingController();
 
   Future<void> tambahBarang(BuildContext context) async {
@@ -18,8 +24,13 @@ class TambahProduk extends StatelessWidget {
         "nama_barang": namaBarangController.text,
         "barcode_barang": barcodeController.text,
         "stok_barang": stokController.text,
-        "harga_modal": hargaModalController.text,
         "harga_eceran": hargaEceranController.text,
+        "satuan_barang": satuanController.text,
+        "stok_besar_barang": stokBesarController.text,
+        "jumlah_isi_barang": jumlahIsiController.text,
+        "harga_eceran_besar": hargaEceranBesarController.text,
+        "satuan_besar_barang": satuanBesarController.text,
+        "harga_modal": hargaModalController.text,
         "harga_grosir": hargaGrosirController.text,
       },
     );
@@ -123,27 +134,7 @@ class TambahProduk extends StatelessWidget {
               controller: stokController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'STOK',
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: BorderSide(
-                    color: Colors.blue,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: BorderSide(
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 15),
-            TextField(
-              controller: hargaModalController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'HARGA MODAL',
+                labelText: 'STOK SATUAN',
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
                   borderSide: BorderSide(
@@ -163,7 +154,137 @@ class TambahProduk extends StatelessWidget {
               controller: hargaEceranController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'HARGA ECERAN',
+                labelText: 'HARGA SATUAN',
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            TextField(
+              controller: satuanController,
+              decoration: InputDecoration(
+                labelText: 'SATUAN KECIL (PCS/METER/KG)',
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(),
+            SizedBox(height: 15),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: stokBesarController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'STOK /LUSIN/ROL/DUS',
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                        borderSide: BorderSide(
+                          color: Colors.blue,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                        borderSide: BorderSide(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 15),
+                Expanded(
+                  child: TextField(
+                    controller: jumlahIsiController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'ISI /LUSIN/ROL/DUS',
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                        borderSide: BorderSide(
+                          color: Colors.blue,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                        borderSide: BorderSide(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 15),
+            TextField(
+              controller: hargaEceranBesarController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'HARGA /LUSIN/ROL/DUS',
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            TextField(
+              controller: satuanBesarController,
+              decoration: InputDecoration(
+                labelText: 'SATUAN BESAR (LUSIN/ROL/DUS)',
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(),
+            SizedBox(height: 15),
+            TextField(
+              controller: hargaModalController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'HARGA MODAL',
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
                   borderSide: BorderSide(

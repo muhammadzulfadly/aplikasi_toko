@@ -16,7 +16,9 @@ class _GudangState extends State<Gudang> {
   List filteredProdukList = [];
   final TextEditingController searchController = TextEditingController();
   bool isSearching = false;
-  final numberFormatter = NumberFormat('#,##0', 'id_ID'); // Formatter untuk harga
+  int? toggledProductId;
+  final numberFormatter =
+      NumberFormat('#,##0', 'id_ID'); // Formatter untuk harga
 
   @override
   void initState() {
@@ -49,6 +51,16 @@ class _GudangState extends State<Gudang> {
     setState(() {
       filteredProdukList = results;
       isSearching = query.isNotEmpty;
+    });
+  }
+
+  void toggleRepeat(int id) {
+    setState(() {
+      if (toggledProductId == id) {
+        toggledProductId = null;
+      } else {
+        toggledProductId = id;
+      }
     });
   }
 
@@ -108,13 +120,23 @@ class _GudangState extends State<Gudang> {
                       itemCount: filteredProdukList.length,
                       itemBuilder: (context, index) {
                         final produk = filteredProdukList[index];
+                        final id = int.parse(produk['id']);
+                        final isToggled = toggledProductId == id;
+                        final harga = isToggled
+                            ? produk['harga_eceran_besar']
+                            : produk['harga_eceran'];
+                        final stok = isToggled
+                            ? produk['stok_besar_barang']
+                            : produk['stok_barang'];
+                        final satuan = isToggled
+                            ? produk['satuan_besar_barang']
+                            : produk['satuan_barang'];
                         return InkWell(
                           onTap: () async {
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    EditProduk(id: int.parse(produk['id'])),
+                                builder: (context) => EditProduk(id: id),
                               ),
                             );
                             if (result == true) {
@@ -136,18 +158,30 @@ class _GudangState extends State<Gudang> {
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    'Rp. ${numberFormatter.format(int.parse(produk['harga_eceran']))}',
+                                    'Rp. ${numberFormatter.format(int.parse(harga))}',
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   SizedBox(height: 5),
-                                  Text(
-                                      'HARGA GROSIR : Rp. ${numberFormatter.format(int.parse(produk['harga_grosir']))}'),
+                                  Text('STOK : $stok'),
                                   SizedBox(height: 5),
-                                  Text('STOK : ${produk['stok_barang']}'),
-                                  SizedBox(height: 5),
-                                  Align(
-                                    alignment: Alignment.centerRight,
+                                  Row(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            toggleRepeat(id);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            shape: CircleBorder(),
+                                          ),
+                                          child: Icon(Icons.repeat,
+                                              color: Colors.blue),
+                                        ),
+                                      ),
+                                      Text('$satuan')
+                                    ],
                                   ),
                                 ],
                               ),
