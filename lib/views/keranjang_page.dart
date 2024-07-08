@@ -226,8 +226,7 @@ class _KeranjangState extends State<Keranjang> {
     final now = DateTime.now();
     final formatter = DateFormat('dd-MM-yyyy');
     final String formattedDate = formatter.format(now);
-    final numberFormatter =
-        NumberFormat('#,##0.##', 'id_ID'); // Formatter untuk harga
+    final numberFormatter = NumberFormat('#,##0.##', 'id_ID');
 
     // Menghitung tinggi kertas berdasarkan jumlah item di keranjang
     final double itemHeight = 25.0; // Tinggi setiap item dalam milimeter
@@ -278,13 +277,21 @@ class _KeranjangState extends State<Keranjang> {
                   itemCount: keranjangList.length,
                   itemBuilder: (context, index) {
                     final produk = keranjangList[index];
+                    final id = int.parse(produk['id']);
+                    final isToggled = toggledProductId == id;
+                    final harga = isGrosirMode
+                        ? produk['harga_grosir']
+                        : isToggled
+                            ? produk['harga_eceran_besar']
+                            : produk['harga_eceran'];
+
                     final double totalHargaProduk =
-                        double.parse(produk['jumlah']) *
-                            double.parse(produk['harga_eceran']);
+                        double.parse(produk['jumlah']) * double.parse(harga);
                     final String jumlahDanHarga =
-                        "${produk['jumlah']} x Rp. ${numberFormatter.format(double.parse(produk['harga_eceran']))}";
+                        "${produk['jumlah']} x Rp. ${numberFormatter.format(double.parse(harga))}";
                     final double jumlahDanHargaFontSize =
                         jumlahDanHarga.length > 20 ? 7 : 9;
+
                     return pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
