@@ -17,8 +17,8 @@ class _HistoriPenjualanState extends State<HistoriPenjualan> {
   }
 
   Future<void> fetchHistori() async {
-    final response = await http
-        .get(Uri.parse('http://shop.mzverse.my.id/api/histori_penjualan.php'));
+    final response = await http.get(Uri.parse(
+        'http://shop.mzverse.my.id/api/histori_penjualan.php'));
 
     if (response.statusCode == 200) {
       setState(() {

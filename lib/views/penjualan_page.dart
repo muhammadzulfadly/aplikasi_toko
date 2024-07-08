@@ -50,7 +50,8 @@ class _PenjualanState extends State<Penjualan> {
       return;
     }
 
-    final String apiUrl = "http://shop.mzverse.my.id/api/search_data.php";
+    final String apiUrl =
+        "http://shop.mzverse.my.id/api/search_data.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {
@@ -69,9 +70,8 @@ class _PenjualanState extends State<Penjualan> {
   }
 
   Future<void> searchByBarcode(String barcode) async {
-    //final String apiUrl = "http://shop.mzverse.my.id/api/search_barcode.php";
     final String apiUrl =
-        "http://192.168.1.12/aplikasi_toko/lib/api/search_barcode.php";
+        "http://shop.mzverse.my.id/api/search_barcode.php";
     final response = await http.post(
       Uri.parse(apiUrl),
       body: {

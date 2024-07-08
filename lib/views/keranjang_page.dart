@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'dart:convert';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
+import 'dart:html' as html;
 
 class Keranjang extends StatefulWidget {
   @override
@@ -16,6 +17,7 @@ class _KeranjangState extends State<Keranjang> {
   List<Map<String, dynamic>> keranjangList = [];
   double totalHarga = 0;
   List<TextEditingController> controllers = [];
+  bool isGrosirMode = false; // Tambahkan variabel untuk mode harga grosir
   int? toggledProductId;
   final numberFormatter =
       NumberFormat('#,##0.##', 'id_ID'); // Formatter untuk harga
@@ -55,9 +57,11 @@ class _KeranjangState extends State<Keranjang> {
     for (var produk in keranjangList) {
       final id = int.parse(produk['id']);
       final isToggled = toggledProductId == id;
-      final harga = isToggled
-          ? double.parse(produk['harga_eceran_besar'])
-          : double.parse(produk['harga_eceran']);
+      final harga = isGrosirMode
+          ? double.parse(produk['harga_grosir'])
+          : isToggled
+              ? double.parse(produk['harga_eceran_besar'])
+              : double.parse(produk['harga_eceran']);
       totalHargaBarang += harga * double.parse(produk['jumlah']);
     }
     setState(() {
@@ -84,10 +88,6 @@ class _KeranjangState extends State<Keranjang> {
       double jumlahJual = double.parse(jumlah);
       double newStok = currentStok - jumlahJual;
 
-      String satuan = toggledProductId == int.parse(produk['id'])
-          ? produk['satuan_besar_barang']
-          : produk['satuan_barang'];
-
       if (newStok < 0) {
         print("Stok tidak cukup untuk produk: ${produk['nama_barang']}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -110,7 +110,7 @@ class _KeranjangState extends State<Keranjang> {
           'id': produk['id'].toString(),
           'stok_barang': newStok.toString(),
           'jumlah': jumlahJual.toString(),
-          'satuan': satuan, // Kirim parameter satuan
+          'satuan': produk['satuan_barang'], // Kirim parameter satuan
         },
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -356,26 +356,26 @@ class _KeranjangState extends State<Keranjang> {
       ),
     );
 
-    // try {
-    //   final bytes = await pdf.save();
-    //   final blob = html.Blob([bytes], 'application/pdf');
-    //   final url = html.Url.createObjectUrlFromBlob(blob);
-    //   html.AnchorElement(href: url)
-    //     ..setAttribute('download', 'struk_penjualan.pdf')
-    //     ..click();
-    //   html.Url.revokeObjectUrl(url);
-    // } catch (e) {
-    //   print("Error generating or downloading PDF: $e");
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(
-    //       content: Text("Gagal mencetak PDF: $e"),
-    //       duration: Duration(seconds: 1),
-    //       behavior: SnackBarBehavior.floating,
-    //       margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
-    //       backgroundColor: Colors.red,
-    //     ),
-    //   );
-    // }
+    try {
+      final bytes = await pdf.save();
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: url)
+        ..setAttribute('download', 'struk_penjualan.pdf')
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } catch (e) {
+      print("Error generating or downloading PDF: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Gagal mencetak PDF: $e"),
+          duration: Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 20.0, right: 200.0),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> addToKeranjang(Map<String, dynamic> produk) async {
@@ -404,6 +404,25 @@ class _KeranjangState extends State<Keranjang> {
           'Keranjang',
           style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          Row(
+            children: [
+              Text(
+                "Grosir",
+                style: TextStyle(color: Colors.white),
+              ),
+              Switch(
+                value: isGrosirMode,
+                onChanged: (value) {
+                  setState(() {
+                    isGrosirMode = value;
+                    hitungTotal();
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -416,9 +435,11 @@ class _KeranjangState extends State<Keranjang> {
                   final controller = controllers[index];
                   final id = int.parse(produk['id']);
                   final isToggled = toggledProductId == id;
-                  final harga = isToggled
-                      ? produk['harga_eceran_besar']
-                      : produk['harga_eceran'];
+                  final harga = isGrosirMode
+                      ? produk['harga_grosir']
+                      : isToggled
+                          ? produk['harga_eceran_besar']
+                          : produk['harga_eceran'];
                   final satuan = isToggled
                       ? produk['satuan_besar_barang']
                       : produk['satuan_barang'];
