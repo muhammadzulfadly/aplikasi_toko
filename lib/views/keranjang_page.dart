@@ -31,10 +31,12 @@ class _KeranjangState extends State<Keranjang> {
 
   void toggleRepeat(int id) {
     setState(() {
-      if (toggledProductId == id) {
-        toggledProductId = null;
-      } else {
-        toggledProductId = id;
+      for (var produk in keranjangList) {
+        if (int.parse(produk['id']) == id) {
+          produk['isToggled'] = !(produk['isToggled'] ?? false);
+          keranjangBox.putAt(keranjangList.indexOf(produk), produk);
+          break;
+        }
       }
       hitungTotal(); // Recalculate the total when toggling
     });
@@ -48,6 +50,10 @@ class _KeranjangState extends State<Keranjang> {
       controllers = List.generate(keranjangList.length, (index) {
         return TextEditingController(text: keranjangList[index]['jumlah']);
       });
+      // Ensure all items have `isToggled` property
+      for (var produk in keranjangList) {
+        produk['isToggled'] ??= false;
+      }
       hitungTotal();
     });
   }
@@ -55,8 +61,7 @@ class _KeranjangState extends State<Keranjang> {
   void hitungTotal() {
     double totalHargaBarang = 0;
     for (var produk in keranjangList) {
-      final id = int.parse(produk['id']);
-      final isToggled = toggledProductId == id;
+      final isToggled = produk['isToggled'] ?? false;
       final harga = isGrosirMode
           ? double.parse(produk['harga_grosir'])
           : isToggled
@@ -88,6 +93,10 @@ class _KeranjangState extends State<Keranjang> {
       double jumlahJual = double.parse(jumlah);
       double newStok = currentStok - jumlahJual;
 
+      String satuan = produk['isToggled']
+          ? produk['satuan_besar_barang']
+          : produk['satuan_barang'];
+
       if (newStok < 0) {
         print("Stok tidak cukup untuk produk: ${produk['nama_barang']}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -110,7 +119,7 @@ class _KeranjangState extends State<Keranjang> {
           'id': produk['id'].toString(),
           'stok_barang': newStok.toString(),
           'jumlah': jumlahJual.toString(),
-          'satuan': produk['satuan_barang'], // Kirim parameter satuan
+          'satuan': satuan, // Kirim parameter satuan
         },
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -125,7 +134,23 @@ class _KeranjangState extends State<Keranjang> {
           var responseData = json.decode(response.body);
           print("Response from API: $responseData");
 
-          if (responseData['success'] != 'true') {
+          if (responseData['success'] == 'true') {
+            // Tambahkan ke histori penjualan
+            var historiBox = await Hive.openBox('histori_penjualan');
+            await historiBox.add({
+              'id': produk['id'],
+              'nama_barang': produk['nama_barang'],
+              'jumlah': produk['jumlah'],
+              'harga': isGrosirMode
+                  ? produk['harga_grosir']
+                  : produk['isToggled']
+                      ? produk['harga_eceran_besar']
+                      : produk['harga_eceran'],
+              'isGrosirMode': isGrosirMode,
+              'isToggled': produk['isToggled'],
+              'tanggal': DateTime.now().toString(),
+            });
+          } else {
             success = false;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -180,7 +205,11 @@ class _KeranjangState extends State<Keranjang> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Print Struk"),
+          title: Center(
+              child: Text(
+            "Print Struk",
+            style: TextStyle(color: Colors.blue),
+          )),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -266,7 +295,8 @@ class _KeranjangState extends State<Keranjang> {
                     pw.Center(
                       child: pw.Text(
                         "$formattedDate",
-                        style: pw.TextStyle(fontSize: 9),
+                        style: pw.TextStyle(
+                            fontSize: 9, fontWeight: pw.FontWeight.bold),
                       ),
                     ),
                   ],
@@ -277,8 +307,7 @@ class _KeranjangState extends State<Keranjang> {
                   itemCount: keranjangList.length,
                   itemBuilder: (context, index) {
                     final produk = keranjangList[index];
-                    final id = int.parse(produk['id']);
-                    final isToggled = toggledProductId == id;
+                    final isToggled = produk['isToggled'] ?? false;
                     final harga = isGrosirMode
                         ? produk['harga_grosir']
                         : isToggled
@@ -304,13 +333,16 @@ class _KeranjangState extends State<Keranjang> {
                                 children: [
                                   pw.Text(
                                     produk['nama_barang'],
-                                    style: pw.TextStyle(fontSize: 10),
+                                    style: pw.TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: pw.FontWeight.bold),
                                     overflow: pw.TextOverflow.clip,
                                   ),
                                   pw.Text(
                                     jumlahDanHarga,
                                     style: pw.TextStyle(
-                                        fontSize: jumlahDanHargaFontSize),
+                                        fontSize: jumlahDanHargaFontSize,
+                                        fontWeight: pw.FontWeight.bold),
                                   ),
                                 ],
                               ),
@@ -322,6 +354,7 @@ class _KeranjangState extends State<Keranjang> {
                               child: pw.Text(
                                 'Rp. ${numberFormatter.format(totalHargaProduk)}',
                                 style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
                                     fontSize:
                                         totalHargaProduk.toString().length > 10
                                             ? 8
@@ -392,6 +425,7 @@ class _KeranjangState extends State<Keranjang> {
     }
 
     produk['jumlah'] = '1';
+    produk['isToggled'] = false; // Set default toggle status to false
     await keranjangBox.add(produk);
     fetchKeranjang();
   }
@@ -440,14 +474,12 @@ class _KeranjangState extends State<Keranjang> {
                 itemBuilder: (context, index) {
                   final produk = keranjangList[index];
                   final controller = controllers[index];
-                  final id = int.parse(produk['id']);
-                  final isToggled = toggledProductId == id;
                   final harga = isGrosirMode
                       ? produk['harga_grosir']
-                      : isToggled
+                      : produk['isToggled']
                           ? produk['harga_eceran_besar']
                           : produk['harga_eceran'];
-                  final satuan = isToggled
+                  final satuan = produk['isToggled']
                       ? produk['satuan_besar_barang']
                       : produk['satuan_barang'];
                   return Card(
@@ -497,7 +529,7 @@ class _KeranjangState extends State<Keranjang> {
                                     alignment: Alignment.centerLeft,
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        toggleRepeat(id);
+                                        toggleRepeat(int.parse(produk['id']));
                                       },
                                       style: ElevatedButton.styleFrom(
                                         shape: CircleBorder(),

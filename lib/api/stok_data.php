@@ -54,15 +54,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($result) {
         if (mysqli_affected_rows($con) > 0) {
             // Menambahkan histori penjualan
+            $transaksi_id = time(); // Menggunakan timestamp sebagai transaksi_id untuk memastikan unik
             $nama_barang = $produk['nama_barang'];
             $harga_jual = ($satuan == $produk['satuan_besar_barang']) ? $produk['harga_eceran_besar'] : $produk['harga_eceran'];
             $total_harga = $harga_jual * $jumlah;
 
-            $histori_query = "INSERT INTO histori_penjualan (produk_id, nama_barang, harga_jual, jumlah, total_harga) 
-                              VALUES ('$id', '$nama_barang', '$harga_jual', '$jumlah', '$total_harga')";
-            mysqli_query($con, $histori_query);
+            $histori_query = "INSERT INTO histori_penjualan (transaksi_id, produk_id, nama_barang, harga_jual, jumlah, total_harga) 
+                              VALUES ('$transaksi_id', '$id', '$nama_barang', '$harga_jual', '$jumlah', '$total_harga')";
+            $histori_result = mysqli_query($con, $histori_query);
 
-            echo json_encode(array('success' => 'true'));
+            if ($histori_result) {
+                error_log("Histori penjualan berhasil ditambahkan.");
+                echo json_encode(array('success' => 'true'));
+            } else {
+                $error_message = mysqli_error($con);
+                error_log("Gagal menambahkan histori penjualan: " . $error_message);
+                echo json_encode(array('success' => 'false', 'error' => $error_message));
+            }
         } else {
             error_log("Query berhasil, tetapi tidak ada baris yang diupdate.");
             echo json_encode(array('success' => 'false', 'error' => 'Tidak ada baris yang diupdate'));
